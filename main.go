@@ -17,6 +17,6 @@ func main() {
 	app.Get("/", func(c *fiber.Ctx) error {
 		return c.SendString("Hello World")
 	})
-	appv1.Get("/users", api.HandleGetUser)
+	appv1.Get("/users", api.HandleGetUsers)
 	app.Listen(*listenAddress) 
 }
