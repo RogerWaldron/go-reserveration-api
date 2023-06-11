@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 
+	"github.com/RogerWaldron/go-reserveration-api/api"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -16,10 +17,6 @@ func main() {
 	app.Get("/", func(c *fiber.Ctx) error {
 		return c.SendString("Hello World")
 	})
-	appv1.Get("/users", handleUser)
-	app.Listen(*listenAddress)
-}
-
-func handleUser(c *fiber.Ctx) error {
-	return c.JSON(map[string]string{"user": "John Wick"})
+	appv1.Get("/users", api.HandleGetUser)
+	app.Listen(*listenAddress) 
 }
