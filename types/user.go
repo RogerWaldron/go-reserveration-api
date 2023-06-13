@@ -30,7 +30,7 @@ func (params CreateUserParams) Validate() map[string]string {
 	if len(params.LastName) < minLengthLastName {
 		errors["lastName"] = fmt.Sprintf("lastName length should be at least %d characters", minLengthLastName)
 	}
-	if len(params.Password) < minLengthFirstName {
+	if len(params.Password) < minLengthPassword {
 		errors["password"] = fmt.Sprintf("Password length should be at least %d characters", minLengthPassword)
 	}
 	if !isValidEmail(params.Email) {
