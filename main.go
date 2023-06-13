@@ -32,10 +32,9 @@ func main() {
 	
 	app := fiber.New(config)
 	appv1 := app.Group("/api/v1")
+	
+	appv1.Post("/user", userHandler.HandlePostUser)
 
-	app.Get("/", func(c *fiber.Ctx) error {
-		return c.SendString("Hello World")
-	})
 	appv1.Get("/user", userHandler.HandleGetUsers)
 	appv1.Get("/user/:id", userHandler.HandleGetUserByID)
 

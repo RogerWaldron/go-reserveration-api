@@ -1,9 +1,8 @@
 package api
 
 import (
-	"context"
-
 	"github.com/RogerWaldron/go-reserveration-api/db"
+	"github.com/RogerWaldron/go-reserveration-api/types"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -18,19 +17,43 @@ func NewUserHandler(userStore db.UserStore) *UserHandler {
 }
 
 func (h *UserHandler) HandleGetUsers(c *fiber.Ctx) error {
-	return c.JSON(map[string]string{"john": "John Wick", "helen": "Helen Wick", "winston": "Winston Scott"})
+	users, err := h.userStore.GetUsers(c.Context())
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(users)
 }
 
 func (h *UserHandler) HandleGetUserByID(c *fiber.Ctx) error {
 	var (
 		id 	= c.Params("id")
-		ctx = context.Background()
 	)
 
-	user, err := h.userStore.GetUserByID(ctx, id)
+	user, err := h.userStore.GetUserByID(c.Context(), id)
 	if err != nil {
 		return err
 	}
 	
 	return c.JSON(user)
+}
+
+func (h *UserHandler) HandlePostUser(c *fiber.Ctx) error {
+	var params types.CreateUserParams
+	err := c.BodyParser(&params)
+	if err != nil {
+		return err
+	}
+
+	user, err := types.NewUserFromParams(params)
+	if err != nil {
+		return err
+	}
+
+	insertedUser, err := h.userStore.InsertUser(c.Context(), user)
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(insertedUser)
 }
