@@ -79,6 +79,11 @@ func (h *UserHandler) HandlePutUser(c *fiber.Ctx) error {
 		return err
 	}
 
+	errors := params.Validate()
+	if len(errors) > 0 {
+		return c.JSON(errors)
+	}
+
 	filter := db.Map{"_id": userID}
 	err = h.userStore.UpdateUser(c.Context(), filter, params)
 	if err != nil {

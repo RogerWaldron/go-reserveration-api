@@ -21,6 +21,18 @@ type UpdateUserParams struct {
 	LastName 					string	`json:"lastName"`
 }
 
+func (params UpdateUserParams) Validate() map[string]string {
+	errors := map[string]string{}
+	if len(params.FirstName) < minLengthFirstName {
+		errors["firstName"] = fmt.Sprintf("firstName length should be at least %d characters", minLengthFirstName)
+	}
+	if len(params.LastName) < minLengthLastName {
+		errors["lastName"] = fmt.Sprintf("lastName length should be at least %d characters", minLengthLastName)
+	}
+
+	return errors
+}
+
 func (p UpdateUserParams) ToBSON() bson.M {
 	m := bson.M{}
 	if len(p.LastName) > 0 {
