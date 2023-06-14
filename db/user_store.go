@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"errors"
 
 	"github.com/RogerWaldron/go-reserveration-api/types"
 	"go.mongodb.org/mongo-driver/bson"
@@ -15,6 +16,7 @@ type UserStore interface {
 	GetUserByID(context.Context, string) (*types.User, error)
 	GetUsers(context.Context) ([]*types.User, error)
 	InsertUser(context.Context, *types.User) (*types.User, error)
+	DeleteUser(context.Context, string) error
 }
 
 type MongoUserStore struct {
@@ -62,11 +64,30 @@ func (s *MongoUserStore) GetUserByID(ctx context.Context, id string) (*types.Use
 }
  
 func (s *MongoUserStore) InsertUser(ctx context.Context, user *types.User) (*types.User, error) {
-	result, err := s.collect.InsertOne(ctx, user)
+	result, err := s.collect.InsertOne(context.TODO(), user)
 	if err != nil {
 		return nil, err
 	}
 	user.ID = result.InsertedID.(primitive.ObjectID)
 
 	return user, nil
+}
+
+func (s *MongoUserStore) DeleteUser(ctx context.Context, id string) error {
+	objID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return err
+	}
+	
+	filter := bson.M{"_id": objID}
+	result, deleteErr := s.collect.DeleteOne(context.TODO(), filter)
+	if deleteErr != nil {
+		return deleteErr
+	}
+
+	if result.DeletedCount == 0 {
+		return errors.New(id + " was not found")
+	}
+
+	return nil
 }

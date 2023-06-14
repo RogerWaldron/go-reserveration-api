@@ -62,3 +62,16 @@ func (h *UserHandler) HandlePostUser(c *fiber.Ctx) error {
 
 	return c.JSON(insertedUser)
 }
+
+func (h *UserHandler) HandleDeleteUser(c *fiber.Ctx) error {
+	deleteID := c.Params("id")
+	if (deleteID == "") {
+		return ErrInvalidID(deleteID)
+	}
+	err := h.userStore.DeleteUser(c.Context(), deleteID)
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(map[string]string{"Deleted": deleteID})
+}

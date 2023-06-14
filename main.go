@@ -34,6 +34,7 @@ func main() {
 	appv1 := app.Group("/api/v1")
 	
 	appv1.Post("/user", userHandler.HandlePostUser)
+	appv1.Delete("/user/:id", userHandler.HandleDeleteUser)
 
 	appv1.Get("/user", userHandler.HandleGetUsers)
 	appv1.Get("/user/:id", userHandler.HandleGetUserByID)
