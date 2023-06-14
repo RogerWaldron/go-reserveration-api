@@ -12,12 +12,16 @@ import (
 
 const userCollection = "users"
 
+// "any" so can pass in mongoDB ID which is a primitive Object
+type Map map[string]any
+
 type UserStore interface {
 	GetUserByID(context.Context, string) (*types.User, error)
 	GetUsers(context.Context) ([]*types.User, error)
 	InsertUser(context.Context, *types.User) (*types.User, error)
 	DeleteUser(context.Context, string) error
-}
+	UpdateUser(context.Context, Map, types.UpdateUserParams) error
+} 
 
 type MongoUserStore struct {
 	client *mongo.Client
@@ -71,6 +75,22 @@ func (s *MongoUserStore) InsertUser(ctx context.Context, user *types.User) (*typ
 	user.ID = result.InsertedID.(primitive.ObjectID)
 
 	return user, nil
+}
+
+func (s *MongoUserStore) UpdateUser(ctx context.Context, filter Map, params types.UpdateUserParams) error {
+	objID, err := primitive.ObjectIDFromHex(filter["_id"].(string))
+	if err != nil {
+		return err
+	}
+
+	filter["_id"] = objID
+	update := bson.M{"$set": params.ToBSON()}
+	_, err = s.collect.UpdateOne(context.TODO(), filter, update)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (s *MongoUserStore) DeleteUser(ctx context.Context, id string) error {

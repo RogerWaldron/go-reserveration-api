@@ -33,11 +33,11 @@ func main() {
 	app := fiber.New(config)
 	appv1 := app.Group("/api/v1")
 	
-	appv1.Post("/user", userHandler.HandlePostUser)
-	appv1.Delete("/user/:id", userHandler.HandleDeleteUser)
-
 	appv1.Get("/user", userHandler.HandleGetUsers)
+	appv1.Post("/user", userHandler.HandlePostUser)
 	appv1.Get("/user/:id", userHandler.HandleGetUserByID)
+	appv1.Delete("/user/:id", userHandler.HandleDeleteUser)
+	appv1.Put("/user/:id", userHandler.HandlePutUser)
 
 	app.Listen(*listenAddress) 
 }

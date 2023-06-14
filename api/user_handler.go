@@ -13,7 +13,7 @@ type UserHandler struct {
 	userStore db.UserStore
 }
 
-func NewUserHandler(userStore db.UserStore) *UserHandler {
+func NewUserHandler( userStore db.UserStore) *UserHandler {
 	return &UserHandler{
 		userStore: userStore,
 	}
@@ -67,6 +67,25 @@ func (h *UserHandler) HandlePostUser(c *fiber.Ctx) error {
 	}
 
 	return c.JSON(insertedUser)
+}
+
+func (h *UserHandler) HandlePutUser(c *fiber.Ctx) error {
+	var (
+		userID = c.Params("id")
+		params types.UpdateUserParams
+	)
+	err := c.BodyParser(&params)
+	if err != nil {
+		return err
+	}
+
+	filter := db.Map{"_id": userID}
+	err = h.userStore.UpdateUser(c.Context(), filter, params)
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(map[string]string{"updated": userID})
 }
 
 func (h *UserHandler) HandleDeleteUser(c *fiber.Ctx) error {
