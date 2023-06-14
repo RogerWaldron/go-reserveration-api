@@ -1,9 +1,12 @@
 package api
 
 import (
+	"errors"
+
 	"github.com/RogerWaldron/go-reserveration-api/db"
 	"github.com/RogerWaldron/go-reserveration-api/types"
 	"github.com/gofiber/fiber/v2"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type UserHandler struct {
@@ -32,6 +35,9 @@ func (h *UserHandler) HandleGetUserByID(c *fiber.Ctx) error {
 
 	user, err := h.userStore.GetUserByID(c.Context(), id)
 	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return ErrNotFound(id)
+		}
 		return err
 	}
 	
