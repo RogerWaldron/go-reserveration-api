@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/RogerWaldron/go-reserveration-api/types"
 	"go.mongodb.org/mongo-driver/bson"
@@ -10,12 +11,10 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-const userCollection = "users"
-
-// "any" so can pass in mongoDB ID which is a primitive Object
-type Map map[string]any
+const collectionName = "users"
 
 type UserStore interface {
+	Dropper
 	GetUserByID(context.Context, string) (*types.User, error)
 	GetUsers(context.Context) ([]*types.User, error)
 	InsertUser(context.Context, *types.User) (*types.User, error)
@@ -28,11 +27,16 @@ type MongoUserStore struct {
 	collect *mongo.Collection
 }
 
-func NewMongoUserStore(c *mongo.Client) *MongoUserStore {
+func NewMongoUserStore(c *mongo.Client, dbName string) *MongoUserStore {
 	return &MongoUserStore{
 		client: c,
-		collect: c.Database(DBNAME).Collection(userCollection),
+		collect: c.Database(dbName).Collection(collectionName),
 	}
+}
+
+func (s *MongoUserStore) Drop(ctx context.Context) error {
+	fmt.Println("--- (´･_･`) --- dropping collection: " + collectionName)
+	return s.collect.Drop(ctx)
 }
 
 func (s *MongoUserStore) GetUsers(ctx context.Context) ([]*types.User, error) {
@@ -68,7 +72,7 @@ func (s *MongoUserStore) GetUserByID(ctx context.Context, id string) (*types.Use
 }
  
 func (s *MongoUserStore) InsertUser(ctx context.Context, user *types.User) (*types.User, error) {
-	result, err := s.collect.InsertOne(context.TODO(), user)
+	result, err := s.collect.InsertOne(ctx, user)
 	if err != nil {
 		return nil, err
 	}
@@ -85,7 +89,7 @@ func (s *MongoUserStore) UpdateUser(ctx context.Context, filter Map, params type
 
 	filter["_id"] = objID
 	update := bson.M{"$set": params.ToBSON()}
-	_, err = s.collect.UpdateOne(context.TODO(), filter, update)
+	_, err = s.collect.UpdateOne(ctx, filter, update)
 	if err != nil {
 		return err
 	}
@@ -100,7 +104,7 @@ func (s *MongoUserStore) DeleteUser(ctx context.Context, id string) error {
 	}
 	
 	filter := bson.M{"_id": objID}
-	result, deleteErr := s.collect.DeleteOne(context.TODO(), filter)
+	result, deleteErr := s.collect.DeleteOne(ctx, filter)
 	if deleteErr != nil {
 		return deleteErr
 	}
